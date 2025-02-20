@@ -1,6 +1,6 @@
 import { Injectable } from "@angular/core";
 import * as signalR from "@microsoft/signalr";
-import { BehaviorSubject } from "rxjs";
+import { BehaviorSubject, Subject } from "rxjs";
 
 @Injectable({
   providedIn: "root",
@@ -10,6 +10,9 @@ export class SignalRService {
   public messages$ = new BehaviorSubject<any[]>([]);
   public matchedUser$ = new BehaviorSubject<string | null>(null);
   public isConnected$ = new BehaviorSubject<boolean>(false);
+  chatMessages: string[] = []; // Array to store chat messages
+  newMessage = new Subject<string>(); // Observable to track new messages
+  public disconnectionMessage$ = new BehaviorSubject<string | null>(null);
 
   constructor() {
     this.hubConnection = new signalR.HubConnectionBuilder()
@@ -30,6 +33,7 @@ export class SignalRService {
   
     this.hubConnection.on("PartnerDisconnected", () => {
       this.matchedUser$.next(null);
+      this.disconnectionMessage$.next("Stranger disconnected"); // Update message
     });
   
     this.hubConnection.onclose(async () => {
@@ -107,5 +111,17 @@ export class SignalRService {
         console.error("Error invoking 'ConnectWithInterests':", err);
     }
 }
+
+
+clearChat() {
+  console.log("clearChat() called: Clearing chat messages...");
+
+  console.log("Before clear:", this.messages$.value); // Log existing messages
+  this.messages$.next([]); // Clear messages observable
+  this.newMessage.next(""); // Notify subscribers
+  console.log("After clear:", this.messages$.value); // Verify messages are cleared
+}
+
+
 
 }
