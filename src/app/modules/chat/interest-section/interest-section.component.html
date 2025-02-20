@@ -1,0 +1,70 @@
+<!-- <div class="flex justify-center items-center min-h-screen bg-gray-50">
+    <div class="bg-white p-6 rounded-xl shadow-lg w-full max-w-md">
+      <h2 class="text-2xl font-bold text-gray-800 mb-4 text-center">Enter Your Interests</h2>
+  
+      <div class="flex gap-2 mb-4">
+        <input [(ngModel)]="inputInterest" 
+               (keydown.enter)="addInterest()" 
+               placeholder="Type an interest and press enter" 
+               class="border border-gray-300 p-3 rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-blue-400" />
+        <button (click)="addInterest()" 
+                class="bg-blue-500 text-white px-4 py-2 rounded-lg shadow-md hover:bg-blue-600 transition">
+          Add
+        </button>
+      </div>
+  
+      <div class="flex flex-wrap gap-2 mb-4">
+        <span *ngFor="let interest of interests; let i = index" 
+              class="bg-blue-100 text-blue-700 px-3 py-1 rounded-full flex items-center shadow">
+          {{ interest }}
+          <button (click)="removeInterest(i)" 
+                  class="ml-2 text-red-500 hover:text-red-700 transition">&times;</button>
+        </span>
+      </div>
+  
+      <button (click)="submitInterests()" 
+              class="bg-green-500 text-white px-4 py-2 rounded-lg w-full shadow-md hover:bg-green-600 transition"
+              [disabled]="interests.length === 0">
+        Start Chat
+      </button>
+    </div>
+  </div>
+   -->
+
+
+<div
+    class="sm:absolute sm:inset-0 flex flex-col flex-auto min-w-0 sm:overflow-hidden bg-gray-100 dark:bg-transparent h-full w-full">
+    <div class="flex flex-1 flex-col gap-2 overflow-hidden h-full w-full">
+        <div class="flex justify-center items-center min-h-screen bg-gray-50">
+            <div class="bg-white p-6 rounded-xl shadow-lg w-full max-w-md">
+              <h2 class="text-2xl font-bold text-gray-800 mb-4 text-center">Enter Your Interests</h2>
+          
+              <div class="flex gap-2 mb-4">
+                <input [(ngModel)]="inputInterest" 
+                       (keydown.enter)="addInterest()" 
+                       placeholder="Type an interest and press enter" 
+                       class="border border-gray-300 p-3 rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-blue-400" />
+                <button (click)="addInterest()" 
+                        class="bg-blue-500 text-white px-4 py-2 rounded-lg shadow-md hover:bg-blue-600 transition">
+                  Add
+                </button>
+              </div>
+          
+              <div class="flex flex-wrap gap-2 mb-4">
+                <span *ngFor="let interest of interests; let i = index" 
+                      class="bg-blue-100 text-blue-700 px-3 py-1 rounded-full flex items-center shadow">
+                  {{ interest }}
+                  <button (click)="removeInterest(i)" 
+                          class="ml-2 text-red-500 hover:text-red-700 transition">&times;</button>
+                </span>
+              </div>
+          
+              <button (click)="submitInterests()" 
+                      class="bg-green-500 text-white px-4 py-2 rounded-lg w-full shadow-md hover:bg-green-600 transition"
+                      [disabled]="interests.length === 0">
+                Start Chat
+              </button>
+            </div>
+          </div>
+    </div>
+</div>

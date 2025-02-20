@@ -87,4 +87,25 @@ export class SignalRService {
       await this.hubConnection.invoke("Disconnect");
     }
   }
+
+
+  async connectWithInterests(userId: string, interests: string[]) {
+    try {
+        // Ensure the connection is started before invoking methods
+        if (this.hubConnection.state === signalR.HubConnectionState.Disconnected) {
+            await this.startConnection();
+        }
+
+        // Invoke the backend method if the connection is established
+        if (this.hubConnection.state === signalR.HubConnectionState.Connected) {
+            await this.hubConnection.invoke("ConnectWithInterests", userId, interests);
+            console.log("Successfully connected with interests:", interests);
+        } else {
+            console.error("Cannot invoke ConnectWithInterests - SignalR connection is not in Connected state");
+        }
+    } catch (err) {
+        console.error("Error invoking 'ConnectWithInterests':", err);
+    }
+}
+
 }

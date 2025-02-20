@@ -1,5 +1,6 @@
 import { Component, OnInit } from "@angular/core";
 import { SignalRService } from "../../services/signalr.service";
+import { Router } from "@angular/router";
 
 @Component({
   selector: "app-chat",
@@ -12,21 +13,27 @@ export class ChatComponent implements OnInit {
   messages: any[] = [];
   messageContent: string = "";
   users: any;
-  isConnected: boolean = false; // Track connection status
+  isConnected: boolean = false;
+  interests: string[] = []; // Store interests for matching
 
-  constructor(private signalRService: SignalRService) {}
+  constructor(private signalRService: SignalRService, private router: Router) {}
 
   ngOnInit(): void {
-    // Generate a unique user ID but don't connect yet
     this.currentUser = "user_" + Math.floor(Math.random() * 10000);
     console.log("Generated user ID:", this.currentUser);
+
+    // Retrieve interests from navigation state
+    if (history.state.interests) {
+      this.interests = history.state.interests;
+      console.log("Received interests for matching:", this.interests);
+    }
   }
 
   startNewChat(): void {
     if (!this.isConnected) {
-      console.log("Starting a new chat...");
+      console.log("Starting a new chat with interests:", this.interests);
       this.signalRService.startConnection().then(() => {
-        this.signalRService.connect(this.currentUser);
+        this.signalRService.connectWithInterests(this.currentUser, this.interests);
         this.isConnected = true;
 
         this.signalRService.matchedUser$.subscribe((user) => {
@@ -54,5 +61,10 @@ export class ChatComponent implements OnInit {
       this.isConnected = false;
       this.messages = [];
     }
+  }
+
+
+  navigateToInterestSection() {
+    this.router.navigate(['/chat']);
   }
 }
