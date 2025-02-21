@@ -1,8 +1,8 @@
 <div
     class="sm:absolute sm:inset-0 flex flex-col flex-auto min-w-0 sm:overflow-hidden bg-gray-100 dark:bg-transparent h-full w-full">
     <div class="flex flex-1 flex-col gap-2 overflow-hidden h-full w-full">
-        <div class="flex justify-center items-center min-h-screen bg-gray-50">
-            <div class="bg-white p-6 rounded-xl shadow-lg w-full max-w-md">
+        <div class="flex self-start w-full mt-10 sm:mt-20">
+            <div class="bg-white p-6 rounded-xl shadow-lg w-full max-w-md mx-auto">
               <h2 class="text-2xl font-bold text-gray-800 mb-4 text-center">Enter Your Interests</h2>
           
               <div class="flex gap-2 mb-4">
@@ -26,10 +26,10 @@
               </div>
           
               <button (click)="submitInterests()" 
-                      class="bg-green-500 text-white px-4 py-2 rounded-lg w-full shadow-md hover:bg-green-600 transition"
-                      [disabled]="interests.length === 0">
-                Start Chat
-              </button>
+        class="bg-green-500 text-white px-4 py-2 rounded-lg w-full shadow-md hover:bg-green-600 transition">
+  Start Chat
+</button>
+
             </div>
           </div>
     </div>

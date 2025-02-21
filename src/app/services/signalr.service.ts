@@ -123,5 +123,22 @@ clearChat() {
 }
 
 
+async getMatchedUserInterests(): Promise<string[]> {
+  try {
+    if (this.hubConnection.state === signalR.HubConnectionState.Connected) {
+      const interests = await this.hubConnection.invoke<string[]>("GetMatchedUserInterests");
+      console.log("Fetched matched user interests:", interests);
+      return interests;
+    } else {
+      console.warn("Cannot fetch interests - SignalR is not connected.");
+      return [];
+    }
+  } catch (err) {
+    console.error("Error fetching matched user interests:", err);
+    return [];
+  }
+}
+
+
 
 }

@@ -17,37 +17,47 @@
             </h3>
           </div>
 
-
           <div class="flex-1 flex flex-col min-h-0 overflow-y-auto h-full py-2 px-2">
             <div
               class="flex-1 p-6 bg-white bg-opacity-60 backdrop-blur-sm overflow-hidden border border-gray-300 rounded-xl">
               <div class="space-y-4">
+
+                <!-- Show if user disconnected -->
                 <div *ngIf="disconnectionMessage"
-                  class="text-center text-red-600 font-semibold p-4 bg-red-100 rounded-lg">
+                     class="text-center text-red-600 font-semibold p-4 bg-red-100 rounded-lg">
                   {{ disconnectionMessage }}
                 </div>
+                
+                <!-- Show "Looking for new buddy..." when searching -->
+                <div *ngIf="isSearching && !matchedUser"
+                     class="text-center text-blue-600 font-semibold p-4 bg-blue-100 rounded-lg">
+                  Looking for new buddy...
+                </div>
+
+                <!-- Show "Matched with user" when a match is found -->
+                <div *ngIf="matchedUser"
+                     class="text-center text-green-600 font-semibold p-4 bg-green-100 rounded-lg">
+                  {{ matchMessage }}
+                </div>
+
                 <div *ngFor="let msg of messages" [ngClass]="{'ml-auto': msg.senderId === currentUser}"
                   class="message rounded-xl shadow-sm transition-all hover:shadow-md w-fit max-w-xs sm:max-w-md md:max-w-lg">
-
                   <div
                     [ngClass]="{'bg-blue-600 text-white rounded-t-xl': msg.senderId === currentUser, 'bg-gray-100 rounded-t-xl': msg.senderId !== currentUser}"
                     class="py-2 px-4 flex items-center">
-
                     <div [ngClass]="{
-          'bg-blue-400': msg.senderId === currentUser, 
-          'bg-blue-100': msg.senderId !== currentUser
-        }" class="w-8 h-8 rounded-full flex items-center justify-center mr-2 border border-gray-300 shadow-sm">
+                      'bg-blue-400': msg.senderId === currentUser, 
+                      'bg-blue-100': msg.senderId !== currentUser
+                    }" class="w-8 h-8 rounded-full flex items-center justify-center mr-2 border border-gray-300 shadow-sm">
                       {{ msg.senderId.charAt(0) }}
                     </div>
-
                     <strong>{{ msg.senderId }}</strong>
                     <span class="ml-auto text-xs opacity-80">{{ msg.timestamp | date:'short' }}</span>
                   </div>
-
                   <div [ngClass]="{
-        'bg-blue-50': msg.senderId === currentUser, 
-        'bg-white': msg.senderId !== currentUser
-      }" class="p-4 rounded-xl">
+                    'bg-blue-50': msg.senderId === currentUser, 
+                    'bg-white': msg.senderId !== currentUser
+                  }" class="p-4 rounded-xl">
                     <span>{{ msg.content }}</span>
                   </div>
                 </div>
@@ -70,16 +80,21 @@
               Disconnect
             </button>
 
-            <input [(ngModel)]="messageContent" placeholder="Type a message..."
-              class="flex-1 border border-gray-200 dark:border-gray-600 rounded-full py-3 px-4 mr-2 focus:outline-none focus:ring-2 focus:ring-blue-300 dark:bg-gray-700 dark:text-white" />
-            <button [disabled]="!matchedUser || !messageContent" (click)="sendMessage()"
-              class="bg-blue-600 hover:bg-blue-700 text-white rounded-full p-3 disabled:opacity-50 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-300 focus:ring-offset-2">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
-                stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-              </svg>
-            </button>
+            <div class="flex items-center gap-2 w-full">
+              <input type="text" 
+                     [(ngModel)]="messageContent" 
+                     (keydown.enter)="sendMessage()"
+                     placeholder="Type a message..."
+                     class="border border-gray-300 rounded-lg px-4 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-400" />
+              <button [disabled]="!matchedUser || !messageContent" (click)="sendMessage()"
+                      class="bg-blue-600 hover:bg-blue-700 text-white rounded-full p-3 disabled:opacity-50 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-300 focus:ring-offset-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                </svg>
+              </button>
+            </div>
+
           </div>
         </div>
       </div>

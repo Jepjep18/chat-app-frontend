@@ -10,13 +10,14 @@ import { Router } from "@angular/router";
 export class ChatComponent implements OnInit {
   currentUser: string = "";
   matchedUser: string | null = null;
+  matchedUserInterests: string[] = [];
   messages: any[] = [];
   messageContent: string = "";
-  users: any;
   isConnected: boolean = false;
-  interests: string[] = []; // Store interests for matching
-  disconnectionMessage: string | null = null; // Track disconnection message
-
+  interests: string[] = [];
+  disconnectionMessage: string | null = null;
+  isSearching: boolean = false;
+  matchMessage: string = ""; // Display message when matched
 
   constructor(private signalRService: SignalRService, private router: Router, private cdr: ChangeDetectorRef) {}
 
@@ -24,50 +25,79 @@ export class ChatComponent implements OnInit {
     this.currentUser = "user_" + Math.floor(Math.random() * 10000);
     console.log("Generated user ID:", this.currentUser);
 
-    // Retrieve interests from navigation state
     if (history.state.interests) {
       this.interests = history.state.interests;
       console.log("Received interests for matching:", this.interests);
     }
 
     this.signalRService.disconnectionMessage$.subscribe((message) => {
-      this.disconnectionMessage = message; // Store disconnection status
+      this.disconnectionMessage = message;
     });
   }
 
   startNewChat(): void {
     console.log("Starting a new chat... Clearing previous messages first.");
-  
-    // Clear previous messages and UI state
+
+    // ✅ Start searching
+    this.isSearching = true;
+    this.matchMessage = ""; // Reset match message
+
     this.signalRService.clearChat();
-    this.messages = []; // Reset messages array in the component
-    this.signalRService.messages$.next([]); // Ensure the BehaviorSubject updates the UI
-    this.matchedUser = null; // Reset the matched user
-  
-    // ✅ Reset disconnection message to hide "Stranger Disconnected"
+    this.messages = [];
+    this.signalRService.messages$.next([]);
+    this.matchedUser = null;
+    this.matchedUserInterests = [];
     this.disconnectionMessage = null;
-  
+
     if (!this.isConnected) {
       console.log("Attempting to start a new chat with interests:", this.interests);
-  
+
       this.signalRService.startConnection().then(() => {
         this.signalRService.connectWithInterests(this.currentUser, this.interests);
         this.isConnected = true;
-  
+
+        // ✅ Subscribe to match updates
         this.signalRService.matchedUser$.subscribe((user) => {
-          this.matchedUser = user;
-          console.log("Matched with user:", user);
+          if (user) {
+            this.matchedUser = user;
+            this.isSearching = false; // ✅ Stop searching when matched
+
+            this.signalRService.getMatchedUserInterests().then((interests) => {
+              this.matchedUserInterests = interests;
+              this.updateMatchMessage();
+            });
+
+            console.log("Matched with user:", user);
+          }
         });
-  
+
+        // ✅ Subscribe to messages
         this.signalRService.messages$.subscribe((messages) => {
           console.log("Messages updated:", messages);
           this.messages = messages;
         });
       });
+
+      // ✅ Auto-stop searching after 5 sec if no match
+      setTimeout(() => {
+        if (!this.matchedUser) {
+          this.isSearching = false;
+        }
+      }, 5000);
     }
   }
-  
-  
+
+  updateMatchMessage(): void {
+    if (this.matchedUser) {
+      const commonInterests = this.interests.filter(interest => this.matchedUserInterests.includes(interest));
+
+      if (commonInterests.length > 0) {
+        this.matchMessage = `Connected with ${this.matchedUser} (Interest: ${commonInterests.join(", ")})`;
+      } else {
+        this.matchMessage = `Connected with ${this.matchedUser}`;
+      }
+    }
+  }
 
   sendMessage(): void {
     if (this.messageContent.trim() && this.isConnected) {
@@ -81,21 +111,20 @@ export class ChatComponent implements OnInit {
       console.log("Disconnecting...");
       this.signalRService.disconnect();
 
-      // Clear matched user's chat history
       if (this.matchedUser) {
         console.log(`Clearing chat for matched user: ${this.matchedUser}`);
         this.signalRService.clearChat();
-        this.cdr.detectChanges(); // Force UI update
+        this.cdr.detectChanges();
       }
-      
 
       this.matchedUser = null;
       this.isConnected = false;
       this.messages = [];
+      this.matchMessage = "";
     }
   }
 
   navigateToInterestSection() {
-    this.router.navigate(["/chat"]); // Navigate
+    this.router.navigate(["/chat"]);
   }
 }

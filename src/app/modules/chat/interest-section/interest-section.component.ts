@@ -32,25 +32,22 @@ export class InterestSectionComponent implements OnInit {
     console.log('Submit button clicked');  
     console.log('Current interests:', this.interests);
 
-    if (this.interests.length > 0) {
-        console.log('Navigating to /chat with interests...', this.interests);
+    console.log('Navigating to /chat with interests...', this.interests);
 
-        this.interestsSubmitted.emit(this.interests);
-        this.router.navigate(['/chat/chat'], { state: { interests: this.interests } })
-            .then(success => {
-                if (success) {
-                    console.log('Navigation to /chat successful');
-                } else {
-                    console.log('Navigation to /chat failed');
-                }
-            })
-            .catch(error => {
-                console.error('Error navigating to /chat:', error);
-            });
-    } else {
-        console.warn('No interests entered. Navigation not triggered.');
-    }
+    this.interestsSubmitted.emit(this.interests);
+    this.router.navigate(['/chat/chat'], { state: { interests: this.interests } })
+        .then(success => {
+            if (success) {
+                console.log('Navigation to /chat successful');
+            } else {
+                console.log('Navigation to /chat failed');
+            }
+        })
+        .catch(error => {
+            console.error('Error navigating to /chat:', error);
+        });
 }
+
 
 
 }
