@@ -1,25 +1,21 @@
-<div
-  class="sm:absolute sm:inset-0 flex flex-col flex-auto min-w-0 sm:overflow-hidden bg-gray-100 dark:bg-transparent h-full w-full">
+<div class="sm:absolute sm:inset-0 flex flex-col flex-auto min-w-0 sm:overflow-hidden bg-gray-100 dark:bg-transparent h-full w-full">
   <div class="flex flex-1 flex-col gap-2 overflow-hidden h-full w-full">
     <div class="h-full w-full flex flex-1">
-      <div
-        class="relative overflow-x-auto shadow-md sm:rounded-lg bg-gray-100 dark:bg-transparent flex flex-col flex-1 h-full w-full">
+      <div class="relative overflow-x-auto shadow-md sm:rounded-lg bg-gray-100 dark:bg-transparent flex flex-col flex-1 h-full w-full">
         <div class="flex flex-col w-full flex-1 h-full">
           <div class="bg-gradient-to-r from-blue-600 to-blue-500 text-white p-6 rounded-b-xl shadow-md cursor-pointer"
-            (click)="navigateToInterestSection()">
+               (click)="navigateToInterestSection()">
             <h3 class="text-gray-700 text-xl font-semibold mb-4 flex items-center">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24"
-                stroke="currentColor">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283-.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                      d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283-.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
               </svg>
               Omegle
             </h3>
           </div>
 
           <div class="flex-1 flex flex-col min-h-0 overflow-y-auto h-full py-2 px-2">
-            <div
-              class="flex-1 p-6 bg-white bg-opacity-60 backdrop-blur-sm overflow-hidden border border-gray-300 rounded-xl">
+            <div class="flex-1 p-6 bg-white bg-opacity-60 backdrop-blur-sm overflow-hidden border border-gray-300 rounded-xl">
               <div class="space-y-4">
 
                 <!-- Show if user disconnected -->
@@ -27,7 +23,7 @@
                      class="text-center text-red-600 font-semibold p-4 bg-red-100 rounded-lg">
                   {{ disconnectionMessage }}
                 </div>
-                
+
                 <!-- Show "Looking for new buddy..." when searching -->
                 <div *ngIf="isSearching && !matchedUser"
                      class="text-center text-blue-600 font-semibold p-4 bg-blue-100 rounded-lg">
@@ -41,7 +37,7 @@
                 </div>
 
                 <div *ngFor="let msg of messages" [ngClass]="{'ml-auto': msg.senderId === currentUser}"
-                  class="message rounded-xl shadow-sm transition-all hover:shadow-md w-fit max-w-xs sm:max-w-md md:max-w-lg">
+                     class="message rounded-xl shadow-sm transition-all hover:shadow-md w-fit max-w-xs sm:max-w-md md:max-w-lg">
                   <div
                     [ngClass]="{'bg-blue-600 text-white rounded-t-xl': msg.senderId === currentUser, 'bg-gray-100 rounded-t-xl': msg.senderId !== currentUser}"
                     class="py-2 px-4 flex items-center">
@@ -62,12 +58,16 @@
                   </div>
                 </div>
 
+                <!-- ✅ Typing Indicator -->
+                <div *ngIf="isTyping && typingUser" class="text-sm text-gray-500 italic mt-2">
+                  {{ typingUser }} is typing...
+                </div>
+
               </div>
             </div>
           </div>
 
-          <div
-            class="bg-white dark:bg-gray-800 p-4 border-t border-blue-100 dark:border-gray-700 flex items-center rounded-t-xl shadow-inner w-full">
+          <div class="bg-white dark:bg-gray-800 p-4 border-t border-blue-100 dark:border-gray-700 flex items-center rounded-t-xl shadow-inner w-full">
             <!-- Show "Start" button if no matched user -->
             <button *ngIf="!matchedUser" (click)="startNewChat()"
               class="bg-green-600 hover:bg-green-700 text-white rounded-full px-4 py-2 transition-colors mr-2">
@@ -79,10 +79,10 @@
               class="bg-red-600 hover:bg-red-700 text-white rounded-full px-4 py-2 transition-colors mr-2">
               Disconnect
             </button>
-
             <div class="flex items-center gap-2 w-full">
               <input type="text" 
                      [(ngModel)]="messageContent" 
+                     (keydown)="onTyping()"
                      (keydown.enter)="sendMessage()"
                      placeholder="Type a message..."
                      class="border border-gray-300 rounded-lg px-4 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-400" />
@@ -94,8 +94,8 @@
                 </svg>
               </button>
             </div>
-
           </div>
+
         </div>
       </div>
     </div>

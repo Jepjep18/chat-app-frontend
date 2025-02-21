@@ -18,6 +18,9 @@ export class ChatComponent implements OnInit {
   disconnectionMessage: string | null = null;
   isSearching: boolean = false;
   matchMessage: string = ""; // Display message when matched
+  isTyping: boolean = false; // ✅ Tracks if matched user is typing
+  typingUser: string | null = null; // ✅ Stores the typing user's name
+  typingTimeout: any; // Timeout for stopping typing indicator
 
   constructor(private signalRService: SignalRService, private router: Router, private cdr: ChangeDetectorRef) {}
 
@@ -33,14 +36,19 @@ export class ChatComponent implements OnInit {
     this.signalRService.disconnectionMessage$.subscribe((message) => {
       this.disconnectionMessage = message;
     });
+
+    // ✅ Listen for typing events
+    this.signalRService.listenForTyping((user: string) => {
+      this.typingUser = user;
+      this.isTyping = true;
+      this.resetTypingIndicator();
+    });
   }
 
   startNewChat(): void {
     console.log("Starting a new chat... Clearing previous messages first.");
-
-    // ✅ Start searching
     this.isSearching = true;
-    this.matchMessage = ""; // Reset match message
+    this.matchMessage = "";
 
     this.signalRService.clearChat();
     this.messages = [];
@@ -51,34 +59,28 @@ export class ChatComponent implements OnInit {
 
     if (!this.isConnected) {
       console.log("Attempting to start a new chat with interests:", this.interests);
-
       this.signalRService.startConnection().then(() => {
         this.signalRService.connectWithInterests(this.currentUser, this.interests);
         this.isConnected = true;
 
-        // ✅ Subscribe to match updates
         this.signalRService.matchedUser$.subscribe((user) => {
           if (user) {
             this.matchedUser = user;
-            this.isSearching = false; // ✅ Stop searching when matched
-
+            this.isSearching = false;
             this.signalRService.getMatchedUserInterests().then((interests) => {
               this.matchedUserInterests = interests;
               this.updateMatchMessage();
             });
-
             console.log("Matched with user:", user);
           }
         });
 
-        // ✅ Subscribe to messages
         this.signalRService.messages$.subscribe((messages) => {
           console.log("Messages updated:", messages);
           this.messages = messages;
         });
       });
 
-      // ✅ Auto-stop searching after 5 sec if no match
       setTimeout(() => {
         if (!this.matchedUser) {
           this.isSearching = false;
@@ -90,12 +92,9 @@ export class ChatComponent implements OnInit {
   updateMatchMessage(): void {
     if (this.matchedUser) {
       const commonInterests = this.interests.filter(interest => this.matchedUserInterests.includes(interest));
-
-      if (commonInterests.length > 0) {
-        this.matchMessage = `Connected with ${this.matchedUser} (Interest: ${commonInterests.join(", ")})`;
-      } else {
-        this.matchMessage = `Connected with ${this.matchedUser}`;
-      }
+      this.matchMessage = commonInterests.length > 0 
+        ? `Connected with ${this.matchedUser} (Interest: ${commonInterests.join(", ")})`
+        : `Connected with ${this.matchedUser}`;
     }
   }
 
@@ -103,7 +102,25 @@ export class ChatComponent implements OnInit {
     if (this.messageContent.trim() && this.isConnected) {
       this.signalRService.sendMessage(this.currentUser, this.messageContent);
       this.messageContent = "";
+      this.signalRService.stopTyping();
     }
+  }
+  
+  onTyping(): void {
+    if (this.matchedUser) {
+      this.signalRService.startTyping();
+      clearTimeout(this.typingTimeout);
+      this.typingTimeout = setTimeout(() => {
+        this.signalRService.stopTyping();
+      }, 2000);
+    }
+  }
+  
+
+  resetTypingIndicator(): void {
+    setTimeout(() => {
+      this.isTyping = false;
+    }, 3000);
   }
 
   disconnect(): void {

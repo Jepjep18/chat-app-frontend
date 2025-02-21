@@ -13,6 +13,8 @@ export class SignalRService {
   chatMessages: string[] = []; // Array to store chat messages
   newMessage = new Subject<string>(); // Observable to track new messages
   public disconnectionMessage$ = new BehaviorSubject<string | null>(null);
+  public currentUser: string = "";  // Track the current user
+  public isTyping: boolean = false; // Track if user is typing
 
   constructor() {
     this.hubConnection = new signalR.HubConnectionBuilder()
@@ -60,22 +62,29 @@ export class SignalRService {
 
   async connect(userId: string) {
     try {
-      // Check the current state and handle appropriately
+      if (!userId) {
+        console.error("User ID is missing! Cannot connect.");
+        return;
+      }
+  
+      this.currentUser = userId;  // ✅ Ensure user ID is assigned
+      console.log(`User connected with ID: ${this.currentUser}`);
+  
       if (this.hubConnection.state === signalR.HubConnectionState.Disconnected) {
         await this.startConnection();
       }
-      
-      // Only proceed if we're successfully connected
+  
       if (this.hubConnection.state === signalR.HubConnectionState.Connected) {
         await this.hubConnection.invoke("Connect", userId);
         console.log("Successfully connected with userId:", userId);
       } else {
-        console.error("Cannot invoke Connect - SignalR connection is not in Connected state");
+        console.error("Cannot invoke Connect - SignalR is not connected.");
       }
     } catch (err) {
       console.error("Error invoking 'Connect':", err);
     }
   }
+  
   
 
   async sendMessage(senderId: string, content: string) {
@@ -95,22 +104,29 @@ export class SignalRService {
 
   async connectWithInterests(userId: string, interests: string[]) {
     try {
-        // Ensure the connection is started before invoking methods
-        if (this.hubConnection.state === signalR.HubConnectionState.Disconnected) {
-            await this.startConnection();
-        }
-
-        // Invoke the backend method if the connection is established
-        if (this.hubConnection.state === signalR.HubConnectionState.Connected) {
-            await this.hubConnection.invoke("ConnectWithInterests", userId, interests);
-            console.log("Successfully connected with interests:", interests);
-        } else {
-            console.error("Cannot invoke ConnectWithInterests - SignalR connection is not in Connected state");
-        }
+      if (!userId) {
+        console.error("User ID is missing! Cannot connect.");
+        return;
+      }
+  
+      this.currentUser = userId;  // ✅ Ensure user ID is assigned
+      console.log(`User connected with interests. ID: ${this.currentUser}, Interests: ${interests}`);
+  
+      if (this.hubConnection.state === signalR.HubConnectionState.Disconnected) {
+        await this.startConnection();
+      }
+  
+      if (this.hubConnection.state === signalR.HubConnectionState.Connected) {
+        await this.hubConnection.invoke("ConnectWithInterests", userId, interests);
+        console.log("Successfully connected with interests:", interests);
+      } else {
+        console.error("Cannot invoke ConnectWithInterests - SignalR is not connected.");
+      }
     } catch (err) {
-        console.error("Error invoking 'ConnectWithInterests':", err);
+      console.error("Error invoking 'ConnectWithInterests':", err);
     }
-}
+  }
+  
 
 
 clearChat() {
@@ -138,6 +154,59 @@ async getMatchedUserInterests(): Promise<string[]> {
     return [];
   }
 }
+
+
+startTyping(): void {
+  if (!this.currentUser) {
+    console.warn("startTyping() called but currentUser is not set!");
+    return;
+  }
+
+  console.log(`startTyping() called - User: ${this.currentUser}`);
+
+  if (this.hubConnection.state === signalR.HubConnectionState.Connected) {
+    this.hubConnection.invoke("StartTyping", this.currentUser)
+      .then(() => console.log(`StartTyping event sent successfully for user: ${this.currentUser}`))
+      .catch(err => console.error("Error sending typing event:", err));
+  } else {
+    console.warn("Cannot send StartTyping event - SignalR is not connected.");
+  }
+}
+
+
+stopTyping(): void {
+  if (!this.currentUser) {
+    console.warn("stopTyping() called but currentUser is not set!");
+    return;
+  }
+
+  console.log(`stopTyping() called - User: ${this.currentUser}`);
+
+  if (this.hubConnection.state === signalR.HubConnectionState.Connected) {
+    this.hubConnection.invoke("StopTyping", this.currentUser)
+      .then(() => console.log(`StopTyping event sent successfully for user: ${this.currentUser}`))
+      .catch(err => console.error("Error sending stop typing event:", err));
+  } else {
+    console.warn("Cannot send StopTyping event - SignalR is not connected.");
+  }
+}
+
+
+
+
+listenForTyping(callback: (user: string) => void): void {
+  this.hubConnection.on("UserTyping", (user: string) => {
+    callback(user);
+  });
+}
+
+
+private typingTimeout(): void {
+  setTimeout(() => {
+    this.isTyping = false;
+  }, 3000); // Reset after 3 seconds of inactivity
+}
+
 
 
 
