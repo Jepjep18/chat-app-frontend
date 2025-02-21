@@ -22,32 +22,36 @@
             <div
               class="flex-1 p-6 bg-white bg-opacity-60 backdrop-blur-sm overflow-hidden border border-gray-300 rounded-xl">
               <div class="space-y-4">
-                <div *ngIf="disconnectionMessage" class="text-center text-red-600 font-semibold p-4 bg-red-100 rounded-lg">
+                <div *ngIf="disconnectionMessage"
+                  class="text-center text-red-600 font-semibold p-4 bg-red-100 rounded-lg">
                   {{ disconnectionMessage }}
                 </div>
-                <div *ngFor="let msg of messages"
-                  [ngClass]="{'ml-auto max-w-3/4': msg.senderId === currentUser, 'max-w-3/4': msg.senderId !== currentUser}"
-                  class="message rounded-xl shadow-sm transition-all hover:shadow-md">
+                <div *ngFor="let msg of messages" [ngClass]="{'ml-auto': msg.senderId === currentUser}"
+                  class="message rounded-xl shadow-sm transition-all hover:shadow-md w-fit max-w-xs sm:max-w-md md:max-w-lg">
+
                   <div
                     [ngClass]="{'bg-blue-600 text-white rounded-t-xl': msg.senderId === currentUser, 'bg-gray-100 rounded-t-xl': msg.senderId !== currentUser}"
                     class="py-2 px-4 flex items-center">
+
                     <div [ngClass]="{
-                        'bg-blue-400': msg.senderId === currentUser, 
-                        'bg-blue-100': msg.senderId !== currentUser
-                      }"
-                      class="w-8 h-8 rounded-full flex items-center justify-center mr-2 border border-gray-300 shadow-sm">
+          'bg-blue-400': msg.senderId === currentUser, 
+          'bg-blue-100': msg.senderId !== currentUser
+        }" class="w-8 h-8 rounded-full flex items-center justify-center mr-2 border border-gray-300 shadow-sm">
                       {{ msg.senderId.charAt(0) }}
                     </div>
+
                     <strong>{{ msg.senderId }}</strong>
                     <span class="ml-auto text-xs opacity-80">{{ msg.timestamp | date:'short' }}</span>
                   </div>
+
                   <div [ngClass]="{
-                    'bg-blue-50': msg.senderId === currentUser, 
-                    'bg-white': msg.senderId !== currentUser
-                  }" class="p-4 rounded-xl">
+        'bg-blue-50': msg.senderId === currentUser, 
+        'bg-white': msg.senderId !== currentUser
+      }" class="p-4 rounded-xl">
                     <span>{{ msg.content }}</span>
                   </div>
                 </div>
+
               </div>
             </div>
           </div>

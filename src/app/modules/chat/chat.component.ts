@@ -38,11 +38,14 @@ export class ChatComponent implements OnInit {
   startNewChat(): void {
     console.log("Starting a new chat... Clearing previous messages first.");
   
-    // Ensure previous messages are cleared
+    // Clear previous messages and UI state
     this.signalRService.clearChat();
     this.messages = []; // Reset messages array in the component
     this.signalRService.messages$.next([]); // Ensure the BehaviorSubject updates the UI
     this.matchedUser = null; // Reset the matched user
+  
+    // ✅ Reset disconnection message to hide "Stranger Disconnected"
+    this.disconnectionMessage = null;
   
     if (!this.isConnected) {
       console.log("Attempting to start a new chat with interests:", this.interests);
@@ -63,6 +66,7 @@ export class ChatComponent implements OnInit {
       });
     }
   }
+  
   
 
   sendMessage(): void {
