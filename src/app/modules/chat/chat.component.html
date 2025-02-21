@@ -53,9 +53,24 @@
                   <div [ngClass]="{
                     'bg-blue-50': msg.senderId === currentUser, 
                     'bg-white': msg.senderId !== currentUser
-                  }" class="p-4 rounded-xl">
-                    <span>{{ msg.content }}</span>
+                  }" class="p-4 rounded-xl flex flex-col gap-1">
+                  
+                  <!-- Message Content -->
+                  <span>{{ msg.content }}</span>
+                
+                  <!-- Date (Formatted as 'Feb 21, 2025') -->
+                  <div class="text-xs text-gray-500 mt-1">
+                    {{ msg.sentAt | date:'MMM d, y' }}
                   </div>
+                
+                  <!-- Message Status (Sent / Read) -->
+                  <div class="text-xs font-medium text-gray-600">
+                    <span *ngIf="msg?.status === 'read'" class="text-green-600">✔✔ Read</span>
+                    <span *ngIf="msg?.status === 'sent'" class="text-blue-600">✔ Sent</span>
+                  </div>
+                
+                </div>
+                
                 </div>
 
                 <!-- ✅ Typing Indicator -->

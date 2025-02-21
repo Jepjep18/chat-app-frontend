@@ -21,6 +21,7 @@ export class ChatComponent implements OnInit {
   isTyping: boolean = false; // ✅ Tracks if matched user is typing
   typingUser: string | null = null; // ✅ Stores the typing user's name
   typingTimeout: any; // Timeout for stopping typing indicator
+  
 
   constructor(private signalRService: SignalRService, private router: Router, private cdr: ChangeDetectorRef) {}
 
@@ -43,6 +44,21 @@ export class ChatComponent implements OnInit {
       this.isTyping = true;
       this.resetTypingIndicator();
     });
+
+    this.signalRService.listenForReadReceipts((messageId) => {
+      console.log(`📩 Read receipt received for message ID: ${messageId}`);
+  
+      this.updateMessageStatus(messageId, "read");
+  
+      // Verify if the status is updated in the messages array
+      const updatedMessage = this.messages.find(msg => msg.id === messageId);
+      if (updatedMessage) {
+          console.log(`✅ Message ID: ${messageId} status updated to: ${updatedMessage.status}`);
+      } else {
+          console.warn(`⚠️ Message ID: ${messageId} not found in messages array.`);
+      }
+  });
+  
   }
 
   startNewChat(): void {
@@ -144,4 +160,23 @@ export class ChatComponent implements OnInit {
   navigateToInterestSection() {
     this.router.navigate(["/chat"]);
   }
+
+
+  // Call this when a message is viewed
+onMessageViewed(messageId: string, senderId: string): void {
+  this.signalRService.markMessageAsRead(messageId, senderId);
+}
+
+// Update message status locally
+updateMessageStatus(messageId: string, status: string) {
+  const messageIndex = this.messages.findIndex(msg => msg.id === messageId);
+  
+  if (messageIndex !== -1) {
+      this.messages[messageIndex].status = status;
+      console.log(`✅ Message ID ${messageId} updated to status: ${status}`);
+  } else {
+      console.warn(`⚠️ Could not update status. Message ID ${messageId} not found.`);
+  }
+}
+
 }

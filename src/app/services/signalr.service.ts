@@ -29,9 +29,22 @@ export class SignalRService {
       this.matchedUser$.next(userId);
     });
   
-    this.hubConnection.on("ReceiveMessage", (senderId: string, content: string, sentAt: string) => {
-      this.messages$.next([...this.messages$.value, { senderId, content, sentAt }]);
+    this.hubConnection.on("ReceiveMessage", (senderId: string, content: string, sentAt?: string) => {
+      if (!senderId || !content) {
+        console.warn("Received an incomplete message:", { senderId, content, sentAt });
+        return;
+      }
+    
+      const newMessage = { 
+        senderId, 
+        content, 
+        sentAt: sentAt || new Date().toISOString(),  // Default to current timestamp
+        status: "sent" 
+      };
+    
+      this.messages$.next([...this.messages$.value, newMessage]);
     });
+    
   
     this.hubConnection.on("PartnerDisconnected", () => {
       this.matchedUser$.next(null);
@@ -192,13 +205,49 @@ stopTyping(): void {
 }
 
 
-
-
 listenForTyping(callback: (user: string) => void): void {
   this.hubConnection.on("UserTyping", (user: string) => {
     callback(user);
   });
 }
+
+
+async markMessageAsRead(messageId: string, senderId: string) {
+  if (this.hubConnection.state === signalR.HubConnectionState.Connected) {
+    await this.hubConnection.invoke("MarkMessageAsRead", messageId, senderId);
+    console.log(`Marked message ${messageId} as read.`);
+  } else {
+    console.warn("Cannot mark message as read - SignalR is not connected.");
+  }
+}
+
+// Listen for read receipt events from SignalR
+listenForReadReceipts(callback: (messageId: string) => void): void {
+  this.hubConnection.on("MessageRead", (messageId: string) => {
+    console.log(`📩 Read receipt received: Message ID ${messageId}`);
+
+    if (!messageId) {
+      console.warn("⚠️ Received an invalid message ID for read receipt.");
+      return;
+    }
+
+    // Subscribe to messages$ to check if the message exists
+    this.messages$.subscribe(messages => {
+      const messageExists = messages.some(msg => msg.id === messageId);
+      
+      if (messageExists) {
+        console.log(`✅ Updating UI: Marking Message ID ${messageId} as read.`);
+        callback(messageId); // Update UI
+      } else {
+        console.warn(`⚠️ Message ID ${messageId} not found in the message list.`);
+      }
+    });
+  });
+
+  console.log("👂 Listening for read receipts from SignalR...");
+}
+
+
 
 
 private typingTimeout(): void {
